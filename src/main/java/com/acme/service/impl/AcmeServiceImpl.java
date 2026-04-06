@@ -27,6 +27,7 @@ public class AcmeServiceImpl implements AcmeService {
 
     @Override
     public OrderResponse order(OrderRequestRest infoOrder) {
+        log.info("Order: {}", infoOrder);
         String responseApi = sendXml(buildXml(infoOrder));
         log.info("Response API: {}", responseApi);
         return parseXml(responseApi);
@@ -41,7 +42,7 @@ public class AcmeServiceImpl implements AcmeService {
 
         ResponseEntity<String> response = restTemplate.exchange(
                 urlPrueba,
-                HttpMethod.POST,
+                HttpMethod.GET,
                 entity,
                 String.class
         );
@@ -50,12 +51,28 @@ public class AcmeServiceImpl implements AcmeService {
     }
 
     public String buildXml(OrderRequestRest dto) {
-        return "<pedido>" + dto.getNumPedido() + "</pedido>" +
-                "<Cantidad>" + dto.getCantidadPedido() + "</Cantidad>" +
-                "<EAN>" + dto.getCodigoEAN() + "</EAN>" +
-                "<Producto>" + dto.getNombreProducto() + "</Producto>" +
-                "<Cedula>" + dto.getNumDocumento() + "</Cedula>" +
-                "<Direccion>" + dto.getDireccion() + "</Direccion>";
+        return
+                "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" " +
+                        "xmlns:env=\"http://WSDLs/EnvioPedidos/EnvioPedidosAcme\">" +
+
+                        "<soapenv:Header/>" +
+
+                        "<soapenv:Body>" +
+                        "<env:EnvioPedidoAcme>" +
+                        "<EnvioPedidoRequest>" +
+
+                        "<pedido>" + dto.getNumPedido() + "</pedido>" +
+                        "<Cantidad>" + dto.getCantidadPedido() + "</Cantidad>" +
+                        "<EAN>" + dto.getCodigoEAN() + "</EAN>" +
+                        "<Producto>" + dto.getNombreProducto() + "</Producto>" +
+                        "<Cedula>" + dto.getNumDocumento() + "</Cedula>" +
+                        "<Direccion>" + dto.getDireccion() + "</Direccion>" +
+
+                        "</EnvioPedidoRequest>" +
+                        "</env:EnvioPedidoAcme>" +
+                        "</soapenv:Body>" +
+
+                        "</soapenv:Envelope>";
     }
 
     public OrderResponse parseXml(String xml) {
